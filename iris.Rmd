@@ -1,0 +1,242 @@
+---
+Task-1: Prediction using Unsupervised Learning
+Name: Vinamrata Rani
+---
+
+K-Means Clustering Analysis on Iris Dataset
+
+
+
+
+#Installing *packages*
+
+```{r}
+install.packages("tidyverse")
+
+
+install.packages("cluster")
+
+
+install.packages("reshape2")
+```
+
+
+
+#Loading *packages*
+```{r}
+library(ggplot2)
+library(cluster)
+library(tidyverse)
+library(reshape2)
+```
+
+
+#Import the Iris Data set
+```{r}
+my_data = read.csv("iris.csv")
+glimpse(my_data)
+head(my_data)
+View(my_data)
+
+```
+
+
+
+#Explore the Data set
+```{r}
+class(my_data)
+str(my_data)
+```
+
+
+#Visualizing the data with *ggplot2*
+
+*SepalLength vs SepalWidth*
+
+```{r}
+ggplot(my_data, aes(SepalLengthCm, SepalWidthCm)) + geom_point() + ggtitle(" Iris scatter plot (SepalLength vs SepalWidth)")
+```
+
+
+*PetalLength vs PetalWidth*
+```{r}
+##library(ggplot2)
+ggplot(my_data, aes(PetalLengthCm, PetalWidthCm)) + geom_point() + ggtitle(" Iris scatter plot (PetalLength vs PetalWidth)")
+```
+
+
+
+
+*SepalLength vs PetalLength*
+
+```{r}
+ggplot(my_data, aes(SepalLengthCm, PetalLengthCm)) + geom_point() + ggtitle(" Iris scatter plot (SepalLength vs PetalLength)")
+```
+
+
+
+
+
+*SepalWidth vs PetalWidth*
+
+```{r}
+ggplot(my_data, aes(SepalWidthCm, PetalWidthCm)) + geom_point() + ggtitle(" Iris scatter plot (SepalWidth vs PetalWidth)")
+```
+
+
+
+
+
+#Box plots
+
+```{r}
+ggplot(my_data)+
+ geom_boxplot(aes(x = Species, y = SepalLengthCm, fill = Species))+
+ theme_bw()
+ggplot(my_data)+
+ geom_boxplot(aes(x = Species, y = SepalWidthCm, fill = Species))+
+ theme_bw()
+ggplot(my_data)+
+ geom_boxplot(aes(x = Species, y = PetalLengthCm, fill = Species))+
+ theme_bw()
+ggplot(my_data)+
+ geom_boxplot(aes(x = Species, y = PetalWidthCm, fill = Species))+
+ theme_bw()
+```
+
+
+
+
+
+#Find the optimal number of clusters by Elbow Method
+
+
+```{r}
+set.seed(150) # for reproduction
+wcss <- vector()
+for (i in 1:10) wcss[i] <- sum(kmeans(my_data[, 2:5], i)$withinss)
+plot(1:10,
+ wcss,
+ type = "b",
+ main = paste("The Elbow Method"),
+ xlab = "Number of Clusters",
+ ylab = "WCSS"
+)
+```
+the elbow point : *k(centers) = 3*
+
+
+
+
+
+
+#Apply kmeans function to the feature columns
+
+
+```{r}
+set.seed(150)
+
+cluster.iris <- kmeans(my_data[, 2:5],centers =  3)
+cluster.iris
+```
+#The kmeans has grouped the data into three clusters- 1, 2 & 3 having *50, 62 & 38* observations respectively
+
+```{r}
+yclus <- cluster.iris$cluster
+table(yclus)
+```
+
+
+#Visualize the kmeans clusters
+
+
+```{r}
+clusplot(my_data[, -5],
+ yclus,
+ lines = 0,
+ shade = TRUE,
+ color = TRUE,
+ labels = 0,
+ plotchar = FALSE,
+ span = TRUE,
+ main = paste("Clusters of Iris Flowers")
+)
+```
+
+
+#Compare the clusters
+
+
+```{r}
+my_data$cluster.kmean <- yclus
+
+c_table=table(my_data$Species , my_data$cluster.kmean)
+c_table
+```
+
+
+
+
+
+#Tiles plot : Species vs. kmeans clusters
+
+```{r}
+mtable <- melt(c_table)
+ggplot(mtable)+
+ geom_tile(aes(x = Var1, y = Var2, fill = value))+
+ labs(x = "Species", y = "kmeans Cluster")+
+ theme_bw()
+```
+
+
+
+#Scatter plots (to view Species & kmeans custers)
+
+
+*SepalLength vs SepalWidth*
+
+```{r}
+cluster.iris$cluster <- as.factor(cluster.iris$cluster)
+ggplot(my_data, aes(SepalLengthCm, SepalWidthCm, color=Species)) + geom_point() + ggtitle(" Iris scatter plot (SepalLength vs SepalWidth) - Species") + theme_bw()
+
+
+ggplot(my_data, aes(SepalLengthCm, SepalWidthCm, color=cluster.iris$cluster)) + geom_point() + ggtitle("Iris  Kmeans cluster plot") + theme_bw()
+
+```
+
+
+
+*PetalLength vs PetalWidth*
+```{r}
+ggplot(my_data) + geom_point(aes(PetalLengthCm, PetalWidthCm, col=Species)) + ggtitle(" Iris scatter plot (PetalLength vs PetalWidth)")
+
+
+ggplot(my_data) + geom_point(aes(PetalLengthCm, PetalWidthCm, col=cluster.iris$cluster)) + ggtitle("Iris  Kmeans cluster plot") 
+
+```
+
+
+*SepalLength vs PetalLength*
+```{r}
+ggplot(my_data, aes(SepalLengthCm, PetalLengthCm, col=Species)) + geom_point() + ggtitle(" Iris scatter plot (SepalLength vs PetalLength)")
+
+ggplot(my_data,aes(SepalLengthCm, PetalLengthCm, col=cluster.iris$cluster)) + geom_point() + ggtitle("Iris  Kmeans cluster plot")
+```
+
+
+
+
+*SepalWidth vs PetalWidth*
+```{r}
+ggplot(my_data, aes(SepalWidthCm, PetalWidthCm, color=Species)) + geom_point() + ggtitle(" Iris scatter plot (SepalWidth vs PetalWidth)")
+
+ggplot(my_data, aes(SepalWidthCm, PetalWidthCm, color=cluster.iris$cluster)) + geom_point() + ggtitle(" Iris  Kmeans cluster plot")
+```
+
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
